@@ -1,56 +1,69 @@
-let users = [];
-let subscribedStocks = {};
-let supportedStocks = ['GOOG', 'TSLA', 'AMZN', 'META', 'NVDA'];
-let currentUser = null;
+const companyData = {
+    company1: {
+        accounts: {
+            account1: [
+                { id: 1, name: 'Alice', balance: '$1000' },
+                { id: 2, name: 'Bob', balance: '$1500' }
+            ],
+            account2: [
+                { id: 3, name: 'Charlie', balance: '$2000' },
+                { id: 4, name: 'David', balance: '$2500' }
+            ]
+        }
+    },
+    company2: {
+        accounts: {
+            account1: [
+                { id: 5, name: 'Eve', balance: '$3000' },
+                { id: 6, name: 'Frank', balance: '$3500' }
+            ],
+            account2: [
+                { id: 7, name: 'Grace', balance: '$4000' },
+                { id: 8, name: 'Hank', balance: '$4500' }
+            ]
+        }
+    }
+};
 
-document.getElementById('login-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const email = document.getElementById('email').value;
-    currentUser = email;
+function updateAccounts() {
+    const companySelect = document.getElementById('company');
+    const accountSelect = document.getElementById('account');
+    const selectedCompany = companySelect.value;
 
-    if (!users.includes(email)) {
-        users.push(email);
-        subscribedStocks[email] = [];
+    accountSelect.innerHTML = '';
+    const accounts = companyData[selectedCompany].accounts;
+
+    for (const account in accounts) {
+        const option = document.createElement('option');
+        option.value = account;
+        option.textContent = account.charAt(0).toUpperCase() + account.slice(1);
+        accountSelect.appendChild(option);
     }
 
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('dashboard-screen').style.display = 'block';
-    document.getElementById('user-info').innerText = Logged in `as: ${email}`;
-
-    updateSubscribedStocks();
-    startPriceUpdates();
-});
-
-function subscribeToStock(stock) {
-    if (!subscribedStocks[currentUser].includes(stock)) {
-        subscribedStocks[currentUser].push(stock);
-        updateSubscribedStocks();
-    }
+    updateTable();
 }
 
-function updateSubscribedStocks() {
-    const stockList = document.getElementById('stocks-list');
-    stockList.innerHTML = '';
-    subscribedStocks[currentUser].forEach(stock => {
-        const li = document.createElement('li');
-        li.id = stock-`${stock}`;
-        li.innerText = `${stock}: $0.00`;
-        stockList.appendChild(li);
+function updateTable() {
+    const companySelect = document.getElementById('company');
+    const accountSelect = document.getElementById('account');
+    const selectedCompany = companySelect.value;
+    const selectedAccount = accountSelect.value;
+
+    const tableBody = document.getElementById('data-table').querySelector('tbody');
+    tableBody.innerHTML = '';
+
+    const accountData = companyData[selectedCompany].accounts[selectedAccount];
+    accountData.forEach(record => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${record.id}</td>
+            <td>${record.name}</td>
+            <td>${record.balance}</td>
+        `;
+        tableBody.appendChild(row);
     });
 }
 
-function startPriceUpdates() {
-    setInterval(() => {
-        supportedStocks.forEach(stock => {
-            const price = (Math.random() * 1000).toFixed(2);
-            users.forEach(user => {
-                if (subscribedStocks[user].includes(stock)) {
-                    const stockItem = document.getElementById`(stock-${stock})`;
-                    if (stockItem) {
-                        stockItem.innerText = `${stock}: $${price}`;
-                    }
-                }
-            });
-        });
-    }, 1000);
-}
+document.addEventListener('DOMContentLoaded', () => {
+    updateAccounts();
+});
